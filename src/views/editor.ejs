@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor de Laudo - LaudoIA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* A4 Paper Size CSS */
+        .a4-paper {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 h-screen flex overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-slate-800 text-white p-4 flex flex-col shrink-0 z-10">
+        <h1 class="text-xl font-bold mb-8">LaudoIA Pro</h1>
+        <nav class="space-y-2 flex-1">
+            <a href="/dashboard" class="block p-2 hover:bg-slate-700 rounded transition">📊 Dashboard</a>
+            <a href="/editor" class="block p-2 bg-slate-700 rounded transition">📄 Novo Laudo</a>
+            <a href="/knowledge" class="block p-2 hover:bg-slate-700 rounded transition">📚 Conhecimento</a>
+        </nav>
+    </aside>
+
+    <!-- Split Screen Content -->
+    <main class="flex-1 flex overflow-hidden">
+
+        <!-- Chat Section (Left) -->
+        <section class="w-1/3 border-r bg-white flex flex-col min-w-[300px]">
+            <div class="p-4 border-b bg-gray-50 flex justify-between items-center">
+                <h2 class="font-bold text-slate-700">Assistente IA</h2>
+                <button class="text-xs bg-slate-200 px-2 py-1 rounded hover:bg-slate-300">Limpar Conversa</button>
+            </div>
+
+            <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-4 bg-white">
+                <!-- Welcome Message -->
+                <div class="flex flex-col space-y-1">
+                    <div class="bg-blue-100 text-blue-800 p-3 rounded-lg rounded-tl-none self-start max-w-[90%]">
+                        <p class="text-sm">Olá! Sou seu assistente pericial. Descreva o acidente ou forneça os dados
+                            iniciais para começarmos o laudo.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 border-t bg-gray-50">
+                <form id="chat-form" class="flex flex-col space-y-2">
+                    <textarea id="msg" rows="3"
+                        class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                        placeholder="Digite aqui... (ex: Acidente envolvendo dois carros na Av. Paulista...)"></textarea>
+                    <button type="submit"
+                        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition font-bold flex justify-center items-center">
+                        <span id="btn-text">Enviar</span>
+                        <!-- Loading Spinner (Hidden by default) -->
+                        <svg id="btn-spinner" class="animate-spin ml-2 h-4 w-4 text-white hidden"
+                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                            </circle>
+                            <path class="opacity-75" fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                            </path>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Document Preview Section (Right) -->
+        <section class="w-2/3 bg-slate-200 p-8 overflow-y-auto flex justify-center">
+            <div id="document-preview" class="a4-paper text-slate-900" contenteditable="true">
+                <div class="text-center mb-8">
+                    <h2 class="text-xl font-bold uppercase underline mb-2">Laudo Técnico Pericial de Sinistro</h2>
+                    <p class="text-sm text-gray-500">Documento gerado automaticamente</p>
+                </div>
+
+                <div class="space-y-6">
+                    <div id="section-initial-data">
+                        <h3 class="font-bold border-b border-black mb-2">1. Identificação</h3>
+                        <p><strong>Data:</strong> [A aguardar dados...]</p>
+                        <p><strong>Local:</strong> [A aguardar dados...]</p>
+                        <p><strong>Envolvidos:</strong> [A aguardar dados...]</p>
+                    </div>
+
+                    <div id="section-narrative">
+                        <h3 class="font-bold border-b border-black mb-2">2. Dinâmica do Evento</h3>
+                        <p class="text-justify">[Descreva o acidente no chat para gerar a narrativa técnica aqui...]</p>
+                    </div>
+
+                    <div id="section-conclusion">
+                        <h3 class="font-bold border-b border-black mb-2">3. Conclusão Preliminar</h3>
+                        <p class="text-justify">[Aguardando análise...]</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // Frontend logic for chat interaction
+        const chatForm = document.getElementById('chat-form');
+        const msgInput = document.getElementById('msg');
+        const messagesContainer = document.getElementById('chat-messages');
+        const documentPreview = document.getElementById('document-preview');
+        const btnText = document.getElementById('btn-text');
+        const btnSpinner = document.getElementById('btn-spinner');
+
+        function appendMessage(text, isUser) {
+            const div = document.createElement('div');
+            div.className = isUser
+                ? 'bg-blue-600 text-white p-3 rounded-lg rounded-tr-none self-end max-w-[90%]'
+                : 'bg-blue-100 text-blue-800 p-3 rounded-lg rounded-tl-none self-start max-w-[90%]';
+
+            const p = document.createElement('p');
+            p.className = 'text-sm whitespace-pre-wrap';
+            p.textContent = text;
+            div.appendChild(p);
+
+            const container = document.createElement('div');
+            container.className = 'flex flex-col space-y-1';
+            container.appendChild(div);
+
+            messagesContainer.appendChild(container);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const text = msgInput.value.trim();
+            if (!text) return;
+
+            // UI Updates
+            appendMessage(text, true);
+            msgInput.value = '';
+            btnText.textContent = 'Processando...';
+            btnSpinner.classList.remove('hidden');
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text, currentHtml: documentPreview.innerHTML })
+                });
+
+                const data = await response.json();
+
+                appendMessage(data.reply, false);
+
+                // Update Document if provided
+                if (data.updatedHtml) {
+                    documentPreview.innerHTML = data.updatedHtml;
+                }
+
+            } catch (error) {
+                appendMessage("Erro ao comunicar com o servidor.", false);
+                console.error(error);
+            } finally {
+                btnText.textContent = 'Enviar';
+                btnSpinner.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+
+</html>

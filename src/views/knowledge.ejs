@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Base de Conhecimento - LaudoIA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 h-screen flex overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-slate-800 text-white p-4 flex flex-col">
+        <h1 class="text-xl font-bold mb-8">LaudoIA Pro</h1>
+        <nav class="space-y-2 flex-1">
+            <a href="/dashboard" class="block p-2 hover:bg-slate-700 rounded transition">📊 Dashboard</a>
+            <a href="/editor" class="block p-2 hover:bg-slate-700 rounded transition">📄 Novo Laudo</a>
+            <a href="/knowledge" class="block p-2 bg-slate-700 rounded transition">📚 Conhecimento</a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-8 overflow-y-auto">
+        <header class="mb-8">
+            <h2 class="text-3xl font-bold text-slate-800">Base de Conhecimento (RAG)</h2>
+            <p class="text-gray-600">Gerencie os documentos que a IA utiliza para referência técnica.</p>
+        </header>
+
+        <!-- Upload Section -->
+        <div class="bg-white p-6 rounded shadow mb-8">
+            <h3 class="font-bold text-lg mb-4">Adicionar Novo Documento</h3>
+            <form action="/knowledge/upload" method="POST" enctype="multipart/form-data" class="flex gap-4 items-end">
+                <div class="flex-1">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Arquivo (PDF, TXT)</label>
+                    <input type="file" name="document" class="block w-full text-sm text-slate-500
+                        file:mr-4 file:py-2 file:px-4
+                        file:rounded-full file:border-0
+                        file:text-sm file:font-semibold
+                        file:bg-blue-50 file:text-blue-700
+                        hover:file:bg-blue-100
+                    " />
+                </div>
+                <button type="submit"
+                    class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition">Upload</button>
+            </form>
+        </div>
+
+        <!-- File List -->
+        <div class="bg-white rounded shadow overflow-hidden">
+            <div class="px-6 py-4 border-b">
+                <h3 class="font-bold text-slate-800">Arquivos Indexados</h3>
+            </div>
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-50 text-gray-600 text-sm">
+                        <th class="p-4 border-b">Nome do Arquivo</th>
+                        <th class="p-4 border-b">Tipo</th>
+                        <th class="p-4 border-b">Tamanho</th>
+                        <th class="p-4 border-b">Ações</th>
+                    </tr>
+                </thead>
+                <tbody class="text-gray-700">
+                    <% if (files.length===0) { %>
+                        <tr>
+                            <td class="p-4 border-b" colspan="4" class="text-center text-gray-500">Nenhum documento
+                                encontrado na base 'data/knowledge'.</td>
+                        </tr>
+                        <% } else { %>
+                            <% files.forEach(function(file) { %>
+                                <tr>
+                                    <td class="p-4 border-b">
+                                        <%= file.name %>
+                                    </td>
+                                    <td class="p-4 border-b uppercase">
+                                        <%= file.ext %>
+                                    </td>
+                                    <td class="p-4 border-b">
+                                        <%= file.size %> KB
+                                    </td>
+                                    <td class="p-4 border-b">
+                                        <button class="text-red-500 hover:underline">Remover</button>
+                                    </td>
+                                </tr>
+                                <% }); %>
+                                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</body>
+
+</html>
