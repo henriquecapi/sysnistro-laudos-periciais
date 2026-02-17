@@ -23,9 +23,9 @@ const chatModel = new ChatOpenAI({
     modelName: behaviorConfig.model,
     openAIApiKey: process.env.OPENROUTER_API_KEY,
     configuration: {
-        baseURL: "https://openrouter.ai/api/v1",
+        baseURL: "https://henriquecapi.github.io/sysnistro-laudos-periciais/",
         defaultHeaders: {
-            "HTTP-Referer": "http://localhost:3000",
+            "HTTP-Referer": "https://henriquecapi.github.io/sysnistro-laudos-periciais/",
             "X-Title": "Sistema de Laudos Periciais"
         },
         timeout: 30000 // 30 seconds timeout
@@ -38,7 +38,7 @@ exports.processChat = async (userMessage, currentHtml) => {
     try {
         console.log(`Processing chat with OpenRouter (Model: ${behaviorConfig.model})...`);
         if (!process.env.OPENROUTER_API_KEY) {
-            throw new Error("OPENROUTER_API_KEY is not set in environment variables.");
+            throw new Error("API_KEY is not set in environment variables.");
         }
 
         // 1. Search for relevant context in RAG
